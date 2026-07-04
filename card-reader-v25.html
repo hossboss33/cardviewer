@@ -647,7 +647,7 @@ button:focus-visible,label.btn:focus-visible,input:focus-visible,.tab:focus-visi
       <input id="picker" type="file" accept=".docx" class="sr">
       <div class="or">or</div>
       <div class="hint">Drag &amp; drop anywhere in this window · or paste a copied file (⌘/Ctrl-V)</div>
-      <div class="dropver">build v25 · 2026-07-01 — if this says an older version, you’re viewing a cached copy; reopen this file (⌘⇧R)</div>
+      <div class="dropver">build v26 · 2026-07-04 — if this says an older version, you’re viewing a cached copy; reopen this file (⌘⇧R)</div>
     </div>
 
     <div class="paste-panel">
@@ -726,7 +726,7 @@ button:focus-visible,label.btn:focus-visible,input:focus-visible,.tab:focus-visi
     </div>
   </section>
 
-  <div class="footnote">Everything runs locally in your browser. Nothing is uploaded. · <span id="buildtag">build v25 · 2026-07-01</span></div>
+  <div class="footnote">Everything runs locally in your browser. Nothing is uploaded. · <span id="buildtag">build v26 · 2026-07-04</span></div>
 </main>
 
 <!-- floating speech timer / stopwatch (draggable) -->
@@ -1230,6 +1230,8 @@ function finishCardModel(paras,numbering){
     stats:{
       readWords:readWords,bulkWords:bulkWords,tagWords:tagWords,titleWords:titleWords,
       analyticWords:analyticWords,analyticCount:analyticCount,
+      /* everything actually said aloud: highlighted text + tags + contention titles + analytics */
+      spokenWords:readWords+tagWords+titleWords+analyticWords,
       cardCount:cardCount,titleCount:titleCount,
       bodySize:bodySize,sizeGate:sizeGate,
       totalWords:paras.reduce(function(a,p){return a+p.wordCount;},0)
@@ -1458,7 +1460,7 @@ function updateStats(){
   $('s-bulk').textContent=st.bulkWords.toLocaleString();
   $('s-cards').textContent=st.cardCount;
   $('s-titles').textContent=st.titleCount;
-  const secs=state.wpm>0?(st.readWords/state.wpm*60):0;
+  const secs=state.wpm>0?(st.spokenWords/state.wpm*60):0;
   $('s-time').textContent=fmtTime(secs);
 }
 
@@ -1611,8 +1613,8 @@ function renderSpeech(){
   }
   if(cards===0)html='<p class="speech-read muted">No cards were detected in this document.</p>';
   host.innerHTML=html;
-  const secs=state.wpm>0?(m.stats.readWords/state.wpm*60):0;
-  $('speech-note').textContent=m.stats.readWords.toLocaleString()+' words · ~'+fmtTime(secs)+' at '+state.wpm+' wpm';
+  const secs=state.wpm>0?(m.stats.spokenWords/state.wpm*60):0;
+  $('speech-note').textContent=m.stats.spokenWords.toLocaleString()+' words · ~'+fmtTime(secs)+' at '+state.wpm+' wpm';
 }
 /* Plain-text of the whole read, for the "Copy entire read" button. */
 function speechText(m){
@@ -1768,7 +1770,7 @@ function stepFont(d){state.readPx=Math.max(13,Math.min(26,state.readPx+d));apply
 
 /* =========================== wire up =========================== */
 function boot(){
-  if(window.console&&console.log)console.log('%cCard Reader build v25 · 2026-07-01','color:#4B9CD3;font-weight:700');
+  if(window.console&&console.log)console.log('%cCard Reader build v26 · 2026-07-04','color:#4B9CD3;font-weight:700');
   // picker
   $('picker').addEventListener('change',function(e){const f=e.target.files&&e.target.files[0];if(f)handleFile(f);});
   // paste-text alternative
@@ -1790,8 +1792,8 @@ function boot(){
   // wpm — recompute header time and the speech-view estimate live
   $('wpm').addEventListener('input',function(){
     const v=parseInt($('wpm').value,10);state.wpm=(!isNaN(v)&&v>0)?v:0;
-    if(state.model){updateStats(); const secs=state.wpm>0?(state.model.stats.readWords/state.wpm*60):0;
-      $('speech-note').textContent=state.model.stats.readWords.toLocaleString()+' words · ~'+fmtTime(secs)+' at '+(state.wpm||'—')+' wpm';}
+    if(state.model){updateStats(); const secs=state.wpm>0?(state.model.stats.spokenWords/state.wpm*60):0;
+      $('speech-note').textContent=state.model.stats.spokenWords.toLocaleString()+' words · ~'+fmtTime(secs)+' at '+(state.wpm||'—')+' wpm';}
   });
   // Full-card toggles
   $('cites-toggle').addEventListener('change',function(){
